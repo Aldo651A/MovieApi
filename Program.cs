@@ -1,6 +1,11 @@
+using MovieApi.Endpoints;
+using MovieApi.Repositories;
 using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<MovieRepository>();
+
 var app = builder.Build();
 
 app.MapGet("/", () => "Welcome to Movie API!");
@@ -42,5 +47,7 @@ app.MapGet("/api/health/db", async (
         );
     }
 });
+
+app.MapMovieEndpoints();
 
 app.Run();
