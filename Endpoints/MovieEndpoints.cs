@@ -93,6 +93,63 @@ public static class MovieEndpoints
             return Results.NoContent();
         });
         
+        
+        movies.MapPut("/{id}", async (
+        int id,
+        UpdateMovieDto data,
+        MovieRepository repository) =>
+        {
+            if (id <= 0 ||
+                string.IsNullOrWhiteSpace(data.Title) ||
+                string.IsNullOrWhiteSpace(data.Director) ||
+                data.ReleaseYear < 1888)
+            {
+                return Results.BadRequest(new
+                {
+                    message = "Invalid movie data."
+                });
+            }
+
+            Movie? movie = await repository.UpdateMovieAsync(id, data);
+
+            if (movie is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(movie);
+        });
+
+    
+        movies.MapPatch("/{id}", async (
+        int id,
+        PatchMovieDto data,
+        MovieRepository repository) =>
+        {
+            if (id <= 0 ||
+                (data.Title is not null &&
+                string.IsNullOrWhiteSpace(data.Title)) ||
+                (data.Director is not null &&
+                string.IsNullOrWhiteSpace(data.Director)) ||
+                (data.ReleaseYear is not null &&
+                data.ReleaseYear < 1888))
+            {
+                return Results.BadRequest(new
+                {
+                    message = "Invalid movie data."
+                });
+            }
+
+            Movie? movie = await repository.PatchMovieAsync(id, data);
+
+            if (movie is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(movie);
+        });
+    
     }
 
 }

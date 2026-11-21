@@ -135,5 +135,75 @@ public class MovieRepository
         return affectedRows > 0;
     }
 
+
+    public async Task<Movie?> UpdateMovieAsync(
+    int id,
+    UpdateMovieDto data)
+    {
+        await using (var connection =
+            new MySqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            await using var command = new MySqlCommand(
+                """
+                UPDATE movies
+                SET title = @title,
+                    director = @director,
+                    release_year = @year
+                WHERE id = @id;
+                """,
+                connection
+            );
+
+            command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@title", data.Title);
+            command.Parameters.AddWithValue("@director", data.Director);
+            command.Parameters.AddWithValue("@year", data.ReleaseYear);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        return await GetMovieAsync(id);
+    }
+
+
+    public async Task<Movie?> PatchMovieAsync(
+    int id,
+    PatchMovieDto data)
+    {
+        await using (var connection =
+            new MySqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+
+            await using var command = new MySqlCommand(
+                """
+                UPDATE movies
+                SET title = COALESCE(@title, title),
+                    director = COALESCE(@director, director),
+                    release_year = COALESCE(@year, release_year)
+                WHERE id = @id;
+                """,
+                connection
+            );
+
+            command.Parameters.AddWithValue("@id", id);
+
+            command.Parameters.AddWithValue(
+                "@title", (object?)data.Title ?? DBNull.Value);
+
+            command.Parameters.AddWithValue(
+                "@director", (object?)data.Director ?? DBNull.Value);
+
+            command.Parameters.AddWithValue(
+                "@year", (object?)data.ReleaseYear ?? DBNull.Value);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        return await GetMovieAsync(id);
+    }
+
 }
 
