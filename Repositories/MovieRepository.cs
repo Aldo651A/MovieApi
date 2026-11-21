@@ -115,5 +115,25 @@ public class MovieRepository
         );
     }
 
+
+    public async Task<bool> DeleteMovieAsync(int id)
+    {
+        await using var connection =
+            new MySqlConnection(_connectionString);
+
+        await connection.OpenAsync();
+
+        await using var command = new MySqlCommand(
+            "DELETE FROM movies WHERE id = @id;",
+            connection
+        );
+
+        command.Parameters.AddWithValue("@id", id);
+
+        int affectedRows = await command.ExecuteNonQueryAsync();
+
+        return affectedRows > 0;
+    }
+
 }
 

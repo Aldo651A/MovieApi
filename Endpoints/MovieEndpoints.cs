@@ -67,6 +67,32 @@ public static class MovieEndpoints
             );
         });
 
+        
+        movies.MapDelete("/{id}", async (
+        string id,
+        MovieRepository repository) =>
+        {
+            if (!int.TryParse(id, out int movieId) || movieId <= 0)
+            {
+                return Results.BadRequest(new
+                {
+                    message = "Invalid movie ID."
+                });
+            }
+
+            bool deleted = await repository.DeleteMovieAsync(movieId);
+
+            if (!deleted)
+            {
+                return Results.NotFound(new
+                {
+                    message = "Movie not found."
+                });
+            }
+
+            return Results.NoContent();
+        });
+        
     }
 
 }
