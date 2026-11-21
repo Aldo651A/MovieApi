@@ -1,3 +1,4 @@
+using MovieApi.DTOs;
 using MovieApi.Models;
 using MySqlConnector;
 
@@ -82,4 +83,37 @@ public class MovieRepository
         return null;
     }
 
+
+    public async Task<Movie> CreateMovieAsync(CreateMovieDto data)
+    {
+        await using var connection =
+            new MySqlConnection(_connectionString);
+
+        await connection.OpenAsync();
+
+        await using var command = new MySqlCommand(
+            """
+            INSERT INTO movies (title, director, release_year)
+            VALUES (@title, @director, @year);
+            """,
+            connection
+        );
+
+        command.Parameters.AddWithValue("@title", data.Title);
+        command.Parameters.AddWithValue("@director", data.Director);
+        command.Parameters.AddWithValue("@year", data.ReleaseYear);
+
+        await command.ExecuteNonQueryAsync();
+
+        int id = checked((int)command.LastInsertedId);
+
+        return new Movie(
+            id,
+            data.Title,
+            data.Director,
+            data.ReleaseYear
+        );
+    }
+
 }
+

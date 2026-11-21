@@ -1,3 +1,4 @@
+using MovieApi.DTOs;
 using MovieApi.Models;
 using MovieApi.Repositories;
 
@@ -43,6 +44,29 @@ public static class MovieEndpoints
             return Results.Ok(movie);
         });
     
+    
+        movies.MapPost("", async (
+        CreateMovieDto data,
+        MovieRepository repository) =>
+        {
+            if (string.IsNullOrWhiteSpace(data.Title) ||
+                string.IsNullOrWhiteSpace(data.Director) ||
+                data.ReleaseYear < 1888)
+            {
+                return Results.BadRequest(new
+                {
+                    message = "Invalid movie data."
+                });
+            }
+
+            Movie movie = await repository.CreateMovieAsync(data);
+
+            return Results.Created(
+                $"/api/movies/{movie.Id}",
+                movie
+            );
+        });
+
     }
 
 }
